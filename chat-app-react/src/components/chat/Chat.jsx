@@ -7,72 +7,77 @@ import {
   fetchMessages,
 } from "../../services/chatServices";
 import { CONST } from "../../utils/constants";
+import { closeSocket, connectToSocket } from "../../services/socketServices";
 
 const Chat = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [chatId, setChatId] = useState(null);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
-  const socket = useRef(null);
-
   const loggedInUserId = localStorage.getItem(CONST.USER_ID);
+
   useEffect(() => {
-    const connectWebSocket = async (roomId) => {
-      const roomName = roomId;
-      socket.current = new WebSocket(
-        `ws://localhost:8000/ws/chat/${roomName}/`
-      );
-
-      socket.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.message && data.message?.sender != loggedInUserId) {
-          setMessages((prev) => [...prev, { sender: {id : data.message?.sender}, content: data.message?.content }]);
-        }
-      };
-
-      socket.current.onclose = () => {
-        console.log("WebSocket disconnected");
-      };
-    };
-
-    if (!chatId) {
-      getchatId();
-    } else {
-      connectWebSocket(chatId);
+    if (chatId) {
+      connectToSocket('chat', chatId, handleSocketMessage)
+      // ws://localhost:8000/ws/chat/18
     }
-
+  
     return () => {
-      socket.current?.close();
+      closeSocket('chat');
     };
   }, [chatId]);
+
+  useEffect(() => {
+    const getChatData = async () => {
+      const allChats = await fetchChats();
+      const existingChat = allChats.find(
+        (chat) =>
+          !chat.is_group &&
+          chat.members.some((m) => m.id === user.id) &&
+          chat.members.some((m) => m.id === parseInt(loggedInUserId))
+      );
+  
+      if (existingChat) {
+        setChatId(existingChat.id);
+        const msgs = await fetchMessages(existingChat.id);
+        setMessages(msgs);
+      } else {
+        setChatId(null);
+        setMessages([]);
+      }
+  
+      setInput('');
+    };
+  
+    getChatData();
+  
+    return () => {
+      setMessages([]);
+      setChatId(null);
+    };
+  }, [user]);
+  
+  const handleSocketMessage = (data) => {
+    if (data.message && data.message?.sender != loggedInUserId) {
+      setMessages((prev) => [...prev, { sender: {id : data.message?.sender}, content: data.message?.content }]);
+    }
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getchatId = async () => {
-    const allChats = await fetchChats();
-    const existingChat = allChats.find(
-      (chat) =>
-        !chat.is_group &&
-        chat.members.some((m) => m.id === user.id) &&
-        chat.members.some((m) => m.id === parseInt(loggedInUserId))
-    );
-
-    if (existingChat) {
-      setChatId(existingChat.id);
-      const msgs = await fetchMessages(existingChat.id);
-      setMessages(msgs);
-      return existingChat.id;
-    }
-  };
-
   const sendMessages = async () => {
     if (!input.trim()) return;
 
     var currentChatId = chatId;
+    console.log("user id",user.id);
+    console.log("chat id",chatId);
     if (!currentChatId) {
+      
       const newChat = await createChat([user.id]);
+      console.log("newChat ", newChat);
+      
       currentChatId = newChat.id;
       setChatId(currentChatId);
     }
@@ -84,7 +89,7 @@ const Chat = ({ user }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+    <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
       <Typography variant="h6" gutterBottom>
         Chat with {user.username}
       </Typography>

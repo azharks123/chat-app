@@ -4,8 +4,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 const UserTile = ({ user, onClick, onDelete }) => (
   <Card sx={{ mb: 2, cursor: "pointer", position: "relative" }}>
     <CardContent>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h6" onClick={onClick}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" onClick={onClick}>
+        <Typography variant="h6">
           {user.username}
         </Typography>
         {onDelete && (

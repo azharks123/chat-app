@@ -6,7 +6,7 @@ from channels.layers import get_channel_layer
 from .models import Chat, Message
 from .serializers import ChatSerializer, ChatCreateSerializer, MessageSerializer
 from .services import send_realtime_message
-
+from django.db.models import Max
 
 class ChatViewSet(viewsets.ModelViewSet):
     queryset = Chat.objects.all()
@@ -18,7 +18,13 @@ class ChatViewSet(viewsets.ModelViewSet):
         return ChatSerializer
 
     def get_queryset(self):
-        return Chat.objects.filter(members=self.request.user).distinct()
+        return (
+            Chat.objects
+            .filter(members=self.request.user)
+            .annotate(latest_message_time=Max("messages__timestamp"))
+            .order_by("-latest_message_time")  # Latest messages first
+            .distinct()
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

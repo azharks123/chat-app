@@ -18,12 +18,12 @@ const Chat = ({ user }) => {
 
   useEffect(() => {
     if (chatId) {
-      connectToSocket('chat', chatId, handleSocketMessage)
+      connectToSocket("chat", chatId, handleSocketMessage);
       // ws://localhost:8000/ws/chat/18
     }
-  
+
     return () => {
-      closeSocket('chat');
+      closeSocket("chat");
     };
   }, [chatId]);
 
@@ -36,7 +36,7 @@ const Chat = ({ user }) => {
           chat.members.some((m) => m.id === user.id) &&
           chat.members.some((m) => m.id === parseInt(loggedInUserId))
       );
-  
+
       if (existingChat) {
         setChatId(existingChat.id);
         const msgs = await fetchMessages(existingChat.id);
@@ -45,23 +45,29 @@ const Chat = ({ user }) => {
         setChatId(null);
         setMessages([]);
       }
-  
-      setInput('');
+
+      setInput("");
     };
-  
+
     getChatData();
-  
+
     return () => {
       setMessages([]);
       setChatId(null);
     };
   }, [user]);
-  
+
   const handleSocketMessage = (data) => {
     if (data.message && data.message?.sender != loggedInUserId) {
-      setMessages((prev) => [...prev, { sender: {id : data.message?.sender}, content: data.message?.content }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: { id: data.message?.sender },
+          content: data.message?.content,
+        },
+      ]);
     }
-  }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -71,13 +77,9 @@ const Chat = ({ user }) => {
     if (!input.trim()) return;
 
     var currentChatId = chatId;
-    console.log("user id",user.id);
-    console.log("chat id",chatId);
+
     if (!currentChatId) {
-      
       const newChat = await createChat([user.id]);
-      console.log("newChat ", newChat);
-      
       currentChatId = newChat.id;
       setChatId(currentChatId);
     }

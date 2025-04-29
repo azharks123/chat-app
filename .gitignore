@@ -1,0 +1,80 @@
+# === Python / Django ===
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.env
+.env.*
+*.egg-info/
+instance/
+.venv/
+venv/
+ENV/
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+.eggs/
+lib/
+lib64/
+pip-log.txt
+pip-delete-this-directory.txt
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Django specific
+staticfiles/
+media/
+db.sqlite3
+local_settings.py
+
+# === Node / React (Vite) ===
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.*
+.vite/
+.cache/
+*.tsbuildinfo
+
+# Vite dev server cache
+vite.svg
+.DS_Store
+
+# === OS / Editor Files ===
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp

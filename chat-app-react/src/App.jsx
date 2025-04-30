@@ -13,6 +13,7 @@ import Register from "./components/auth/Register";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import Navbar from "./components/common/Navbar";
 
 const theme = createTheme({
   palette: {
@@ -32,6 +33,7 @@ const App = () => {
             path="/dashboard"
             element={
               <ProtectedRoute>
+                <Navbar/>
                 <Dashboard />
               </ProtectedRoute>
             }
@@ -40,6 +42,7 @@ const App = () => {
             path="/admin"
             element={
               <ProtectedRoute requiredRole="admin">
+                <Navbar/>
                 <AdminPanel />
               </ProtectedRoute>
             }

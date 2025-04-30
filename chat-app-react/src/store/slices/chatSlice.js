@@ -45,10 +45,10 @@ const chatSlice = createSlice({
         state.chats = action.payload;
       })
       .addCase(removeChat.fulfilled, (state, action) => {
-        state.chats = state.chats.filter((chat) => chat.id !== action.payload);
-        if (state.activeChat?.chatId === action.payload) {
+        if (state.activeChat.id == action.payload) {
           state.activeChat = null;
         }
+        state.chats = state.chats.filter((chat) => chat.id !== action.payload);
       })
       .addCase(addChat.fulfilled, (state, action) => {
         const newChat = action.payload;

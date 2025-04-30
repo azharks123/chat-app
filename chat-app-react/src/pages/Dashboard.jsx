@@ -44,18 +44,15 @@ const Dashboard = () => {
   const debounced = useDebouncedCallback((searchTerm) => {
     dispatch(fetchUsers(searchTerm));
     setSearch(searchTerm);
-  }, 200);
+  }, 400);
 
   const handleDeleteChat = (chatId) => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
-      if (chatId === activeChat.id) dispatch(setActiveChat(null));
       dispatch(removeChat(chatId));
     }
   };
 
   return (
-    <>
-    <Navbar/>
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         {loggedInUserName}
@@ -84,7 +81,12 @@ const Dashboard = () => {
           >
             <Typography variant="h5">Chats</Typography>
             <Tooltip title="Start New Chat">
-              <IconButton onClick={() => setOpenChatModal(true)}>
+              <IconButton
+                onClick={() => {
+                  setSearch("");
+                  setOpenChatModal(true);
+                }}
+              >
                 <ChatIcon />
               </IconButton>
             </Tooltip>
@@ -147,7 +149,6 @@ const Dashboard = () => {
         )}
       </Box>
     </Container>
-    </>
   );
 };
 

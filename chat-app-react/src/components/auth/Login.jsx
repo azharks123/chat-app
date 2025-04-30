@@ -31,15 +31,17 @@ const Login = () => {
     try {
       localStorage.clear()
       let hashedPassword = await hashPassword(values.password);
-      console.log(hashPassword);
+      console.log(hashedPassword);
       
       await login({username: values.username, password: hashedPassword})
         .then((res) => {
           if (res?.data?.access) {
+            const is_admin = res?.data?.user.role === 'admin'
             localStorage.setItem(CONST.TOKEN, res?.data?.access);
             localStorage.setItem(CONST.REFRESH, res?.data?.refresh);
             localStorage.setItem(CONST.USER_ID, res?.data?.user.id);
             localStorage.setItem(CONST.USER_NAME, res?.data?.user.username);
+            localStorage.setItem(CONST.IS_ADMIN, is_admin);
             navigate("/dashboard")
           }
           else {

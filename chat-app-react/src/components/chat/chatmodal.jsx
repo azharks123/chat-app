@@ -80,7 +80,7 @@ const StartChatModal = ({ open, onClose }) => {
       if (existingChat) {
         dispatch(setActiveChat(existingChat));
       } else {
-        dispatch(addChat({ usersIds: [selectedUserIds] }));
+        dispatch(addChat({ usersIds: selectedUserIds }));
       }
     }
     onClose();
@@ -89,7 +89,7 @@ const StartChatModal = ({ open, onClose }) => {
   const debounced = useDebouncedCallback((searchTerm) => {
     dispatch(fetchUsers(searchTerm));
     setSearch(searchTerm);
-  }, 200);
+  }, 400);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">

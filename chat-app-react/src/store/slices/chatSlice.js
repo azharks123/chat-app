@@ -20,8 +20,8 @@ export const removeChat = createAsyncThunk(
 export const addChat = createAsyncThunk(
   "chat/addChat",
   async ({usersIds, isGroup = false, chatName = ""}) => {
-    await createChat(usersIds, isGroup, chatName);
-    return chatId;
+    const newChat = await createChat(usersIds, isGroup, chatName);
+    return newChat;
   }
 );
 
@@ -29,14 +29,14 @@ const chatSlice = createSlice({
   name: "chat",
   initialState: {
     chats: [],
-    activeUser: null,
+    activeChat: null,
   },
   reducers: {
-    setActiveUser(state, action) {
-      state.activeUser = action.payload;
+    setActiveChat(state, action) {
+      state.activeChat = action.payload;
     },
-    clearActiveUser(state) {
-      state.activeUser = null;
+    clearActiveChat(state) {
+      state.activeChat = null;
     },
   },
   extraReducers: (builder) => {
@@ -46,14 +46,17 @@ const chatSlice = createSlice({
       })
       .addCase(removeChat.fulfilled, (state, action) => {
         state.chats = state.chats.filter((chat) => chat.id !== action.payload);
-        if (state.activeUser?.chatId === action.payload) {
-          state.activeUser = null;
+        if (state.activeChat?.chatId === action.payload) {
+          state.activeChat = null;
         }
       })
-      // .addCase(addChat.fulfilled, (state, action) => {
-      // });
+      .addCase(addChat.fulfilled, (state, action) => {
+        const newChat = action.payload;
+        state.chats.push(newChat);
+        state.activeChat = newChat;
+      });
   },
 });
 
-export const { setActiveUser, clearActiveUser } = chatSlice.actions;
+export const { setActiveChat, clearActiveChat } = chatSlice.actions;
 export default chatSlice.reducer;

@@ -27,18 +27,16 @@ class ChatSerializer(serializers.ModelSerializer):
 class ChatCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
-        fields = ['id', 'is_group', 'name', 'members']
+        fields = ['id', 'is_group', 'name', 'members', 'created_at']
 
     def create(self, validated_data):
         members_data = self.initial_data.get('members', [])
         is_group = validated_data.get('is_group', False)
 
-        if not is_group and len(members_data) == 2:
+        if not is_group :
             existing_chats = Chat.objects.filter(
                 is_group=False,
                 members__id=members_data[0]
-            ).filter(
-                members__id=members_data[1]
             ).distinct()
 
             if existing_chats.exists():

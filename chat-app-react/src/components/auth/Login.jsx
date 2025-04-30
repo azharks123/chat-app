@@ -29,14 +29,22 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      localStorage.clear()
       let hashedPassword = await hashPassword(values.password);
+      console.log(hashPassword);
+      
       await login({username: values.username, password: hashedPassword})
         .then((res) => {
-          localStorage.setItem(CONST.TOKEN, res?.data?.access);
-          localStorage.setItem(CONST.REFRESH, res?.data?.refresh);
-          localStorage.setItem(CONST.USER_ID, res?.data?.user.id);
-          localStorage.setItem(CONST.USER_NAME, res?.data?.user.username);
-          navigate("/dashboard");
+          if (res?.data?.access) {
+            localStorage.setItem(CONST.TOKEN, res?.data?.access);
+            localStorage.setItem(CONST.REFRESH, res?.data?.refresh);
+            localStorage.setItem(CONST.USER_ID, res?.data?.user.id);
+            localStorage.setItem(CONST.USER_NAME, res?.data?.user.username);
+            navigate("/dashboard")
+          }
+          else {
+            alert("Invalid credentials")
+          }
         })
         .catch((err) => alert("Invalid credentials"))
         .finally(() => setSubmitting(false));

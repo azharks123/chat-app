@@ -18,18 +18,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { CONST } from "../../utils/constants";
 import { useDebouncedCallback } from "use-debounce";
 import { fetchUsers } from "../../store/slices/userSlice";
-import { addChat } from "../../store/slices/chatSlice";
+import { addChat, setActiveChat } from "../../store/slices/chatSlice";
 
 const StartChatModal = ({ open, onClose }) => {
   const dispatch = useDispatch();
-  const { chats, activeUser } = useSelector((state) => state.chat);
+  const { chats } = useSelector((state) => state.chat);
   const { users } = useSelector((state) => state.user);
   const currentUserId = localStorage.getItem(CONST.USER_ID);
   const [userslist, setUserlist] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [groupName, setGroupName] = useState('');
-  
+  const [selectedUserIds, setSelectedUsers] = useState([]);
+  const [groupName, setGroupName] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -41,12 +40,11 @@ const StartChatModal = ({ open, onClose }) => {
 
   const getChattedUsers = (chats) => {
     const members = chats
-      .filter((chat) => !chat.is_group && chat.members.length > 1)
+      .filter((chat) => !chat.is_group)
       .map((chat) =>
         chat.members.find((m) => m.id.toString() !== currentUserId)
       )
       .filter(Boolean);
-
     setUserlist(members);
   };
 
@@ -58,16 +56,32 @@ const StartChatModal = ({ open, onClose }) => {
     });
 
     setSelectedUsers((prev) =>
-      prev.includes(newUser.id) ? prev.filter((uid) => uid !== newUser.id) : [...prev, newUser.id]
+      prev.includes(newUser.id)
+        ? prev.filter((uid) => uid !== newUser.id)
+        : [...prev, newUser.id]
     );
   };
-  
+
   const handleCreate = async () => {
-    if (selectedUsers.length > 0) {
-      dispatch(addChat({ usersIds: selectedUsers, isGroup: true, chatName: groupName }))
-    }
-    else {
-      dispatch(addChat({ usersIds: selectedUsers, isGroup: false, chatName: '' }))
+    if (selectedUserIds.length > 1) {
+      dispatch(
+        addChat({
+          usersIds: selectedUserIds,
+          isGroup: true,
+          chatName: groupName,
+        })
+      );
+    } else {
+      const existingChat = chats.find(
+        (chat) =>
+          !chat?.is_group &&
+          chat?.members.some((m) => m.id === selectedUserIds[0])
+      );
+      if (existingChat) {
+        dispatch(setActiveChat(existingChat));
+      } else {
+        dispatch(addChat({ usersIds: [selectedUserIds] }));
+      }
     }
     onClose();
   };
@@ -95,23 +109,23 @@ const StartChatModal = ({ open, onClose }) => {
           {(search.length > 0 ? users : userslist).map((user) => (
             <ListItem
               key={user.id}
-              button='true'
+              button="true"
               onClick={() => toggleSelectUser(user)}
             >
               <ListItemText primary={user.username} />
               <ListItemSecondaryAction>
                 <Checkbox
                   edge="end"
-                  checked={selectedUsers.includes(user.id)}
+                  checked={selectedUserIds.includes(user.id)}
                   onChange={() => {
-                    toggleSelectUser(user)
+                    toggleSelectUser(user);
                   }}
                 />
               </ListItemSecondaryAction>
             </ListItem>
           ))}
         </List>
-        {selectedUsers.length > 1 && (
+        {selectedUserIds.length > 1 && (
           <TextField
             fullWidth
             label="Group Name"
@@ -128,8 +142,8 @@ const StartChatModal = ({ open, onClose }) => {
             variant="contained"
             onClick={handleCreate}
             disabled={
-              selectedUsers.length === 0 ||
-              (selectedUsers.length > 1 && !groupName.trim())
+              selectedUserIds.length === 0 ||
+              (selectedUserIds.length > 1 && !groupName.trim())
             }
           >
             Start Chat

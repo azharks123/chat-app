@@ -16,6 +16,15 @@ class ChatViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return ChatCreateSerializer
         return ChatSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        chat = serializer.save()
+
+        output_serializer = ChatSerializer(chat, context={"request": request})
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
 
     def get_queryset(self):
         return (
@@ -38,7 +47,6 @@ class ChatViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "Chat deleted successfully."}, status=status.HTTP_204_NO_CONTENT
         )
-
 
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer

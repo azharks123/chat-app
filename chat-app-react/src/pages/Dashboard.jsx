@@ -13,46 +13,49 @@ import Chat from "../components/chat/chatbox";
 import { CONST } from "../utils/constants";
 import ChatIcon from "@mui/icons-material/Chat";
 import StartChatModal from "../components/chat/chatmodal";
+import Navbar from "../components/common/Navbar";
 
 import { useDispatch, useSelector } from "react-redux";
-import { loadChats, setActiveUser, removeChat } from "../store/slices/chatSlice";
+import {
+  loadChats,
+  setActiveChat,
+  removeChat,
+  addChat,
+} from "../store/slices/chatSlice";
 import { fetchUsers } from "../store/slices/userSlice";
 
 const Dashboard = () => {
-
   const dispatch = useDispatch();
-  const { chats, activeUser } = useSelector((state) => state.chat);
+  const { chats, activeChat } = useSelector((state) => state.chat);
   const { users } = useSelector((state) => state.user);
   const loggedInUserName = localStorage.getItem(CONST.USER_NAME);
   const [openChatModal, setOpenChatModal] = useState(false);
   const currentUserId = localStorage.getItem(CONST.USER_ID);
   const [search, setSearch] = useState("");
 
-
   useEffect(() => {
     dispatch(loadChats());
   }, []);
-    
+
   useEffect(() => {
     setSearch("");
-  }, [activeUser]);
-  
+  }, [activeChat]);
+
   const debounced = useDebouncedCallback((searchTerm) => {
     dispatch(fetchUsers(searchTerm));
     setSearch(searchTerm);
   }, 200);
 
-  const getOtherUser = (chat) => {
-    return chat.members.find((m) => m.id.toString() !== currentUserId);
-  };
-
   const handleDeleteChat = (chatId) => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
+      if (chatId === activeChat.id) dispatch(setActiveChat(null));
       dispatch(removeChat(chatId));
     }
-  };    
+  };
 
   return (
+    <>
+    <Navbar/>
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         {loggedInUserName}
@@ -99,10 +102,19 @@ const Dashboard = () => {
                   key={user.id}
                   user={user}
                   onClick={() => {
-                    dispatch(setActiveUser(user));
+                    const existingChat = chats.find(
+                      (chat) =>
+                        !chat?.is_group &&
+                        chat?.members.some((m) => m.id === user.id)
+                    );
+                    if (!!existingChat) {
+                      dispatch(setActiveChat(existingChat));
+                    } else {
+                      dispatch(addChat({ usersIds: [user.id] }));
+                    }
                   }}
-                  />
-                ))}
+                />
+              ))}
             </>
           ) : (
             <Box>
@@ -110,14 +122,14 @@ const Dashboard = () => {
                 const isGroup = chat.is_group;
                 const displayName = isGroup
                   ? chat.name
-                  : chat.members.find((m) => m.id.toString() !== currentUserId)?.username;
-
+                  : chat.members.find((m) => m.id.toString() !== currentUserId)
+                      ?.username;
                 return (
                   <UserTile
                     key={chat.id}
                     user={{ ...chat, username: displayName }}
                     onClick={() => {
-                      dispatch(setActiveUser(chat));
+                      dispatch(setActiveChat(chat));
                     }}
                     onDelete={() => handleDeleteChat(chat.id)}
                   />
@@ -128,13 +140,14 @@ const Dashboard = () => {
         </Box>
 
         {/* Right Side: Chat Component */}
-        {activeUser && (
+        {activeChat && (
           <Box sx={{ flex: 1.5 }}>
-            <Chat user={activeUser} />
+            <Chat CurrentChat={activeChat} />
           </Box>
         )}
       </Box>
     </Container>
+    </>
   );
 };
 

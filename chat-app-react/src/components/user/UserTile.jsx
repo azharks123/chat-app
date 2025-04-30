@@ -1,5 +1,6 @@
 import { Card, CardContent, Typography, IconButton, Box } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import React from "react";
 
 const UserTile = ({ user, onClick, onDelete }) => (
   <Card sx={{ mb: 2, cursor: "pointer", position: "relative" }}>
@@ -24,5 +25,4 @@ const UserTile = ({ user, onClick, onDelete }) => (
   </Card>
 );
 
-export default UserTile;
-  
+export default React.memo(UserTile);  

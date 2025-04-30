@@ -6,7 +6,7 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import UserTile from "../components/user/UserTile";
 import { useDebouncedCallback } from "use-debounce";
 import Chat from "../components/chat/chatbox";
@@ -46,11 +46,72 @@ const Dashboard = () => {
     setSearch(searchTerm);
   }, 400);
 
-  const handleDeleteChat = (chatId) => {
-    if (window.confirm("Are you sure you want to delete this chat?")) {
-      dispatch(removeChat(chatId));
-    }
-  };
+  const handleDeleteChat = useCallback(
+    (chatId) => {
+      if (window.confirm("Are you sure you want to delete this chat?")) {
+        dispatch(removeChat(chatId));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleChatClick = useCallback(
+    (chat) => {
+      dispatch(setActiveChat(chat));
+    },
+    [dispatch]
+  );
+
+  const getDisplayName = useCallback(
+    (chat) => {
+      if (chat.is_group) return chat.name;
+      return chat.members.find((m) => m.id.toString() !== currentUserId)
+        ?.username;
+    },
+    [currentUserId]
+  );
+
+  const handleUserClick = useCallback(
+    (user) => {
+      const existingChat = chats.find(
+        (chat) => !chat?.is_group && chat?.members.some((m) => m.id === user.id)
+      );
+      if (existingChat) {
+        dispatch(setActiveChat(existingChat));
+      } else {
+        dispatch(addChat({ usersIds: [user.id] }));
+      }
+    },
+    [chats, dispatch]
+  );
+
+  const renderedChats = useMemo(
+    () =>
+      chats.map((chat) => {
+        const displayName = getDisplayName(chat);
+        return (
+          <UserTile
+            key={chat.id}
+            user={{ ...chat, username: displayName }}
+            onClick={() => handleChatClick(chat)}
+            onDelete={() => handleDeleteChat(chat.id)}
+          />
+        );
+      }),
+    [chats, getDisplayName, handleChatClick, handleDeleteChat]
+  );
+
+  const renderedUsers = useMemo(
+    () =>
+      users.map((user) => (
+        <UserTile
+          key={user.id}
+          user={user}
+          onClick={() => handleUserClick(user)}
+        />
+      )),
+    [users, handleUserClick]
+  );
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -97,48 +158,7 @@ const Dashboard = () => {
             onClose={() => setOpenChatModal(false)}
           />
 
-          {search ? (
-            <>
-              {users.map((user) => (
-                <UserTile
-                  key={user.id}
-                  user={user}
-                  onClick={() => {
-                    const existingChat = chats.find(
-                      (chat) =>
-                        !chat?.is_group &&
-                        chat?.members.some((m) => m.id === user.id)
-                    );
-                    if (!!existingChat) {
-                      dispatch(setActiveChat(existingChat));
-                    } else {
-                      dispatch(addChat({ usersIds: [user.id] }));
-                    }
-                  }}
-                />
-              ))}
-            </>
-          ) : (
-            <Box>
-              {chats.map((chat) => {
-                const isGroup = chat.is_group;
-                const displayName = isGroup
-                  ? chat.name
-                  : chat.members.find((m) => m.id.toString() !== currentUserId)
-                      ?.username;
-                return (
-                  <UserTile
-                    key={chat.id}
-                    user={{ ...chat, username: displayName }}
-                    onClick={() => {
-                      dispatch(setActiveChat(chat));
-                    }}
-                    onDelete={() => handleDeleteChat(chat.id)}
-                  />
-                );
-              })}
-            </Box>
-          )}
+          {search ? renderedUsers : renderedChats}
         </Box>
 
         {/* Right Side: Chat Component */}

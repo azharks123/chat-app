@@ -41,14 +41,17 @@ apiGateway.interceptors.response.use(
           
           const newAccessToken = res.data.access;
           localStorage.setItem(CONST.TOKEN, res?.data?.access);
+          if (res?.data?.refresh) {
+            localStorage.setItem(CONST.REFRESH, res.data.refresh);
+          }
           originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
           return apiGateway(originalRequest);
         }
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
-        // localStorage.removeItem(CONST.REFRESH);
-        // localStorage.removeItem(CONST.TOKEN);
-        // window.location.href = "/login";
+        localStorage.removeItem(CONST.REFRESH);
+        localStorage.removeItem(CONST.TOKEN);
+        window.location.href = "/login";
       }
     }
   }

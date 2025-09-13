@@ -3,4 +3,4 @@ daphne
 djangorestframework
 django-cors-headers
 djangorestframework-simplejwt
-pip install channels
+channels

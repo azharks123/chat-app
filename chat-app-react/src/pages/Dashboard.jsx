@@ -13,7 +13,6 @@ import Chat from "../components/chat/chatbox";
 import { CONST } from "../utils/constants";
 import ChatIcon from "@mui/icons-material/Chat";
 import StartChatModal from "../components/chat/chatmodal";
-import Navbar from "../components/common/Navbar";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,8 +20,10 @@ import {
   setActiveChat,
   removeChat,
   addChat,
+  markChatUnread,
 } from "../store/slices/chatSlice";
 import { fetchUsers } from "../store/slices/userSlice";
+import { connectToSocket, closeSocket } from "../services/socketServices";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,23 @@ const Dashboard = () => {
     dispatch(fetchUsers(searchTerm));
     setSearch(searchTerm);
   }, 400);
+
+  useEffect(() => {
+    if (currentUserId) {
+      connectToSocket("notification", currentUserId, handleSocketMessage);
+    }
+
+    return () => {
+      closeSocket("notification");
+    };
+  }, [currentUserId]);
+
+  const handleSocketMessage = (data) => {
+    console.log("notification recieved", data);
+    if (data.message.alert_type === "new_message" && data.message.id) {
+      dispatch(markChatUnread(data.message.id));
+    }
+  };
 
   const handleDeleteChat = useCallback(
     (chatId) => {
@@ -89,12 +107,15 @@ const Dashboard = () => {
     () =>
       chats.map((chat) => {
         const displayName = getDisplayName(chat);
+        console.log(chat);
         return (
           <UserTile
             key={chat.id}
             user={{ ...chat, username: displayName }}
             onClick={() => handleChatClick(chat)}
             onDelete={() => handleDeleteChat(chat.id)}
+            isActive={activeChat?.id===chat?.id}
+            isUnread={chat.unread}
           />
         );
       }),

@@ -1,0 +1,35 @@
+.card {
+  margin-bottom: 16px;
+  cursor: pointer;
+  position: relative;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s;
+}
+
+.cardUnread {
+  background-color: #fbeaea;
+  box-shadow: 0 2px 12px rgba(244,67,54,0.12);
+}
+
+.username {
+  font-weight: 400;
+  color: #333;
+  letter-spacing: 0.5px;
+}
+
+.usernameUnread {
+  font-weight: 700;
+  /* color: #d32f2fe6; */
+}
+
+.unreadDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #d32f2f;
+  display: inline-block;
+  margin-right: 4px;
+  box-shadow: 0 0 4px rgba(76, 64, 64, 0.2);
+}

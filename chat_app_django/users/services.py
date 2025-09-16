@@ -1,6 +1,6 @@
 from channels.layers import get_channel_layer
 
-async def send_realtime_message(room, type, data):
+async def send_realtime_notification(room, type, data):
     channel_layer = get_channel_layer()
     try:    
         await channel_layer.group_send(

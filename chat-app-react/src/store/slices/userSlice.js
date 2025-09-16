@@ -27,5 +27,4 @@ const userSlice = createSlice({
   },
 });
 
-// export const { setSearch } = userSlice.actions;
 export default userSlice.reducer;

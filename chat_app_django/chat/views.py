@@ -1,11 +1,10 @@
 import asyncio
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from .models import Chat, Message
 from .serializers import ChatSerializer, ChatCreateSerializer, MessageSerializer
 from .services import send_realtime_message
+from users.services import send_realtime_notification
 from django.db.models import Max
 
 class ChatViewSet(viewsets.ModelViewSet):
@@ -62,12 +61,25 @@ class MessageViewSet(viewsets.ModelViewSet):
         message = serializer.save(sender=self.request.user)
 
         room = f"chat_{message.chat.id}"
-        type = "chat.massage"
+        type = "chat.message"
         data = {
             "id": message.id,
             "sender": message.sender.id,
             "content": message.content,
             "timestamp": str(message.timestamp),
         }
-
         asyncio.run(send_realtime_message(room, type, data))
+
+        room_members = message.chat.members.exclude(id=message.sender.id)
+        for member in room_members:      
+            room = f"user_{member.id}"
+            type = "user.notification"
+            data = {
+                "id": message.chat.id,
+                "sender": message.sender.id,
+                "content": message.content,
+                "timestamp": str(message.timestamp),
+                "alert_type": "new_message"
+            }
+            print(member.id)
+            asyncio.run(send_realtime_notification(room, type, data))

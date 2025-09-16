@@ -36,11 +36,12 @@ const Login = () => {
       await login({username: values.username, password: hashedPassword})
         .then((res) => {
           if (res?.data?.access) {
-            const is_admin = res?.data?.user.role === 'admin'
+            const is_admin = res?.data?.user.role === 'admin' ? 'true' : ''
             localStorage.setItem(CONST.TOKEN, res?.data?.access);
             localStorage.setItem(CONST.REFRESH, res?.data?.refresh);
             localStorage.setItem(CONST.USER_ID, res?.data?.user.id);
             localStorage.setItem(CONST.USER_NAME, res?.data?.user.username);
+            localStorage.setItem(CONST.User_ROLE, res?.data?.user.role);
             localStorage.setItem(CONST.IS_ADMIN, is_admin);
             navigate("/dashboard")
           }
@@ -110,7 +111,7 @@ const Login = () => {
                 onClick={()=>{navigate('/register')}}
                 disabled={!values}
               >
-                Sign-in
+                Sign-up
               </Button>
             </Form>
           )}

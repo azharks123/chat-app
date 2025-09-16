@@ -64,6 +64,8 @@ A real-time chat application built with **React (Vite)** on the frontend and **D
 ## Create virtual environment
 ```python -m venv venv```
 ```source venv/bin/activate```
+# for Quick Start
+``` chmod +x start.sh && ./start.sh ```
 
 ## Install dependencies
 ```pip install -r requirements.txt```

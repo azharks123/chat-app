@@ -9,6 +9,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Navbar from "./components/common/Navbar";
+import { ROUTES } from "./utils/router";
 
 const Login = lazy(() => import("./components/auth/Login"));
 const Register = lazy(() => import("./components/auth/Register"));
@@ -28,10 +29,10 @@ const App = () => {
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path={ROUTES.LOGIN} element={<Login />} />
+            <Route path={ROUTES.REGISTER} element={<Register />} />
             <Route
-              path="/dashboard"
+              path={ROUTES.DASHBOARD}
               element={
                 <ProtectedRoute>
                   <Navbar />
@@ -40,7 +41,7 @@ const App = () => {
               }
             />
             <Route
-              path="/admin"
+              path={ROUTES.ADMIN}
               element={
                 <ProtectedRoute requiredRole="admin">
                   <Navbar />
@@ -48,7 +49,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/login" />} />
+            <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
           </Routes>
         </Suspense>
       </Router>
